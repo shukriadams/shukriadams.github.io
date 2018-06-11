@@ -19,7 +19,7 @@ module.exports = function(grunt) {
             site: {
                 options: { },
                 files: [
-                    { src: ['assemble/pages/**/*.hbs'], dest: '.' }
+                    { src: ['assemble/partials/pages/**/*.hbs'], dest: '.' }
                 ]
             }
         },
