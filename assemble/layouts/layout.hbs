@@ -3,16 +3,28 @@
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-        <link rel="stylesheet" href="style/base.css" type="text/css">
         <link rel='shortcut icon' type='image/x-icon' href='media/img/favicon.png'/>
         <meta http-equiv="content-type" name="description" content="Shukri Adams Blog">
         <meta http-equiv="content-type" name="keywords" content="tech, coding, nerdy things">
         <title>{{title}} | The Umpteenth Blog</title>
         {{#block "head"}}{{/block}}
+
+        <link rel="stylesheet" href="style/base.css" type="text/css">
+        <link rel="stylesheet" href="style/layout.css" type="text/css">
     </head>
     <body>
-        <h1>{{title}}</h1>
-        Date : {{date}}
-        {{#block "body"}}{{/block}}
+        <div>
+            <div class="layout-header">
+                <h1>The Umpteenth Blog : {{title}}</h1>
+            </div>
+            <div>
+                {{#if date}}
+                    <div class="layout-date">   
+                        Date : {{postDate}}
+                    </div>
+                {{/if}}
+                {{#block "body"}}{{/block}}
+            </div>
+        </div>
     </body>
 </html>
