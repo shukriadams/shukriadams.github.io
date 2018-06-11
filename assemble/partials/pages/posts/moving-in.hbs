@@ -8,13 +8,20 @@ date : "2018-06-11"
 
 Have decided to try this blog thing again. I've been on several blogging platforms before, but never
 lasted because the more seriously I took it, the more frustrated I got with the lack of control and ability to
-customize. This time I've decided to change things around a bit.
+customize. This time I've decided to flip the problem on its head and start with a lean, custom approach.
 
-- Everything will be in markdown, a format I've grown to enjoy writing in while writing code documentation. 
-- Posts may be short and choppy, I'll expand older posts where appropriate. This non-linear style will
-  hopefully suit my way of thinking.
-- Of course, I had to write my own blogging engine to do this - https://github.com/shukriadams/shukriadams.github.io, and knowing me
-  I'll spend more time coding on it than actually blogging.
+Which of course means, I rolled my own blogging engine, which I can tinker with at the obvious expense of blogging on it.
+
+- Everything will be in markdown, a format I've grown to enjoy while writing code documentation. 
+- Posts may be short and choppy, and I'll expand older posts where appropriate. This non-linear style will
+  hopefully suit my disjointed, non-linear way of thinking.
+- It needs to be hosted somewhere easy so I can move it somewhere else when the first hosting option invariably fails. 
+- No database. Ugh. Flat files please, databases are the Devil's toolshed.
+
+I ended up implementing it in the tools I know best (NodeJs + Assemble.io), and it was inspired by that seminal Phil Hawksworth
+talk I saw at [Coldfront '14](https://speakerdeck.com/philhawksworth/dynamic-static-site-strategies-coldfront-conference?slide=1).
+
+It took six time longer then anticipated, but I anticipated one hour.
 
         {{/markdown}}
     {{/content}}

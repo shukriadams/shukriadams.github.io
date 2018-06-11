@@ -1,3 +1,26 @@
+.layout {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    position: relative;
+}
+
+.layout-blogName {
+    font-size: 18px;
+    padding: 8px 16px;
+    background-color: var(--color-silver);
+}
+
+.layout-content {
+    flex: 1;
+    padding: 16px;
+}
+
 .layout-date {
     font-weight: bold;
+}
+
+.layout-footer {
+    padding: 8px 0;
+    text-align: center;
 }
