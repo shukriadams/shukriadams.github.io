@@ -1,0 +1,34 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+
+  #.................................................................
+  # VM config
+  #.................................................................
+  config.vm.box = "ubuntu/xenial64"
+  config.vm.synced_folder "./..", "/vagrant"
+  config.vm.provider :virtualbox do |v|
+     v.customize ["modifyvm", :id, "--memory", 1048]
+  end
+
+
+  #.................................................................
+  # provision script
+  #.................................................................
+  config.vm.provision :shell, path: "provision.sh"
+
+
+  #.................................................................
+  # ssh forward is still broken, transfer stuff manually
+  #.................................................................
+  config.vm.provision "file", source: "~/.ssh/id_rsa", destination: "~/temp_xfer/id_rsa"
+  config.vm.provision "file", source: "~/.ssh/known_hosts", destination: "~/temp_xfer/known_hosts"
+  config.vm.provision "file", source: "~/.gitconfig", destination: "~/temp_xfer/.gitconfig"
+
+
+  #.................................................................
+  # DEV AND DEBUGGING
+  #.................................................................
+  config.vm.network "forwarded_port", guest: 6001, host: 6001 
+end
