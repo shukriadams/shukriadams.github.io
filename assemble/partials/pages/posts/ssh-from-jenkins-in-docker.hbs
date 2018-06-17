@@ -1,0 +1,123 @@
+---
+title : "SSH from Jenkins in Docker" 
+date : "2018-06-11"
+---
+{{#extend "layout"}}
+    {{#content "body"}}
+        {{#markdown}}
+
+## Or, the saga of running things inside of other things
+
+I should have known this would spiral out of control. What started off as a minimalist blog quickly turned into a second devops job, but
+seeing as how I wanted to blog about devops anyway, I figured it was worth eating the dog food.
+
+So the day after I put this blog up I decided it would be great to write posts directly on github's website via the code editor, and 
+have my posts show up automagically courtesy of a [Jenkins](https://jenkins.io/) job. I had Jenkins running on a Linode VM, but 
+somehow it was failing to start, and I didn't want to reinstall it directly on the host machine. Sounds like a perfect candidate for 
+Docker, how long could _this_ possibly take? A while, it seems.
+
+## Security is why we can't have nice things
+
+It's been a while since I looked into dockerized Jenkins, but it looks like there have been fabulous advancements since, and 
+Jenkins are proud to plug their (new Docker image)[https://hub.docker.com/r/jenkins/jenkins/]. Setting a hello-world container up is 
+trivial with the following docker-compose.yml 
+
+      version: "2"
+      services:
+        jenkins:
+          image: jenkins/jenkins:2.127-slim
+          restart: unless-stopped
+          ports:
+          - "8080:8080"
+          volumes:
+          - ./content:/var/jenkins_home/:rw
+
+But that's where the fun stops. Getting it run securely behind nginx with SSL is an ongoing trial. But today I thought I'd focus on
+security. Have a look at that volume mapping - Jenkins is writing its entire state into a Docker volume folder.
+That's sort-of smart - you can back up and transfer this one folder to manage essentially your entire Jenkins instance's state. And it
+works great, until you realize Jenkins is putting _everything_ in there, including it's .ssh folder, and that's when you know this is 
+going to hurt.
+
+### Security
+
+Jenkins needs to get at the things you want to build, and that usually means SSH keys. Now I know that copying keys into containers
+is a no-no and all that, but
+
+1. this is a private build container, not something I'm releasing to the public 
+2. ssh agent-forwarding doesn't work reliably, and there are better things in life wasting time on
+3. I copy build agent keys, never my own, and build agent keys can be rotated
+
+Copying keys into a container should be trivial, keeping in mind where Jenkins' home folder is
+
+    docker cp ./keys/. CONTAINER:/var/jenkins_home/.ssh
+ 
+ except jenkins_home is a volume on your host system, so whack-a-mole, you get the keys right back, and when you shell onto your 
+ Jenkins container to test them
+ 
+     ssh -T git@github.com
+
+you get the dreaded 
+
+    Permissions XYZ for '/.ssh/id_rsa' are too open.
+    It is recommended that your private key files are NOT accessible by others.
+    This private key will be ignored.
+
+To get around this, you need to do a buch of things
+
+1. Don't copy keys into a container at build time (Dockerfile), but rather during container mount (docker-compose).
+This way the keys aren't stored in your container image. That's more secure, and if you change the key, you don't have to recompile
+the image.
+
+    version: "2"
+    services:
+      jenkins :
+        volumes:
+        - /path/on/host/to/keys:/usr/parentKeys/:ro
+
+So /usr/parentKeys/ is where the keys will show up in the image, but this isn't where we'll be using them, because that folder is also
+too "open".
+
+2. Create an onStart.sh bash script next to your Dockerfile, this will end up getting baked into your container image, and will
+fire ever time the container starts
+
+    #!/bin/bash
+    mkdir -p /var/jenkins_keys
+    cp /usr/parentKeys/id_rsa /var/jenkins_keys/id_rsa
+    chmod 700 -R /var/jenkins_keys
+    chown -R jenkins /var/jenkins_keys
+
+    # todo: force add github to known_hosts
+
+This copies the keys from the shared volume to a completely secured internal folder.
+
+3. Your Dockerfile can look a bit like 
+    
+    FROM jenkins/jenkins:2.127-slim
+    
+    RUN ...(other stuff)
+        mkdir /usr/scripts && \
+        echo "IdentityFile /var/jenkins_keys/id_rsa" >> /etc/ssh/ssh_config
+
+    ADD ./onStart.sh /usr/scripts
+    RUN chmod +x /usr/scripts/onStart.sh
+    CMD sh -c "/usr/scripts/onStart.sh && /sbin/tini -- /usr/local/bin/jenkins.sh"
+
+This adds your secured key location to the global ssh config list, but once only (at container build time). The keys don't exist
+at this point, but they will when the container mounts. The rest of this adds the onStart script, and note that the start COMMAND of
+the container is overridden - first call onStart.sh, then call Jenkins as the container normally would.
+
+4. Test it - 
+
+    docker-compose up -d
+
+Then shell into it
+
+    docker exec -it -u root jenkins bash
+    su jenkins
+    ssh -T git@bitbucket.org
+
+You should be rewarded with a message that your key works.
+
+        {{/markdown}}
+    {{/content}}
+{{/extend}}
