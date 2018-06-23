@@ -1,0 +1,97 @@
+---
+title : "10 reasons Perforce is the worst modern version control system" 
+date : "2018-06-23"
+---
+{{#extend "layout"}}
+    {{#content "body"}}
+        {{#markdown}}
+
+In 2018 I started working in the games industry doing a loose mix of automation, scripting and tooling. The shop I work at uses
+Perforce to store game, and from what I gather, this is somewhat standard in this business. Perforce is marketed as being ideal
+for large code bases with a lot of "creative" types working on binary assets such as textures, 3d models and such like. I first
+heard about Perforce while watching Double Fine's studio vlogs on Youtube - I assumed coming into this that the product was 
+matured and capable of doing all the things a CMS is expected to do in 2018. Turns out I was wrong.
+
+## 1 - Its model is a mess
+
+Professionally I've used Microsoft visual Sourcesafe, Microsoft TFS, Subversion, git and Perforce. Git and Perforce were the most
+difficult to figure out, but everything in git feels necessary and logical, and once you wrap your head around git, it feels like
+a great tool to help you solve problems. Perforce's concepts are a weird clutter that somehow always feel like they're an impediment 
+to getting things done. 
+
+Take the workspace concept for example. The workspace concept is actually the same as the client concept, the former was deprecated
+some time ago, but never removed, so there are two concepts that do the same thing. If you want to pull code from Perforce, just to
+read, you have to create a workspace on the Perforce server, bolted to your user id, your computer, and the path on the computere
+you'll be placing the code. If you want to pull the code to another folder, you'll need to create a new workspace. 
+
+It's 2018 - git has clearly demonstrated the awesome scalable power of the pull request and gitflow in general, but hey, 
+here's Perforce trying to bring exclusive checkouts back. This is a concept I thought died with Sourcesafe - remember when that 
+developer accidentally checked all the files in your project, then went on vacation?
+
+## 2 - The command line tool is horrible
+
+Perforce has a popular Windows client which users rave over. This however is completely irrelevant if you're doing scripting, 
+automated building or such like - you need a command line tool for that. Almost no one uses the P4 command line tool, because
+it's pretty useless. You can't for example create a workspace with a single command, you're pretty much forced to interact with
+it, making automation really tricky. P4 commands come with a list of optional switches, but what you found out pretty quickly is
+that many switches cannot be used together to create complex commands - that throws errors.
+
+## 3 - The documentation is useless 
+
+Perfoce's website has some bare bones documentation which describes things like commands and command switches, but doesn't explain
+when and why to use things. You're on your own with that.
+
+## 4 - Files come out flagged as read only
+
+Peforce likes to pretend it's protecting your files by marking them as readonly on your filesystem. You can manually remove this
+flag and edit anything you want, so it's completely useless. However, if you're scriping on Windows systems you'll often 
+encounter bizarre errors where trying to remove this flag from a script fails. If your build process requires changing or
+overwriting the files you've checked out, you're in trouble.
+
+## 5 - It's slow, even though they claim it's fast
+
+Perforce makes a big show about performance but in reality, creating branches can take hours. We've experienced this consistently
+and no one can explain why. Perforce's client also doesn't keep any local hash information about files, so if you pull some code, then
+pull it again, it will repull everything.
+
+## 6 - The community is tiny and quiet
+
+Perforce seems to have picked up a following only in niche industries like gaming, where people see source control as a means to
+an end instead of an actual culture of collaboration (like git and github). You will therefore find very little helpful information
+online when you have a complex problem to solve. In this sense Perforce is similar to a lot of other niche proprietary products 
+where the only users are paid professionals who have neither professional nor personal motivation to gather around the product. 
+
+There are almost no questions on Stackoverflow, and the ones that you do find often revolve around the Windows client, not the 
+command line utility. Perforce maintains an aging forum that looks and feels straight out of the 90s. Forget about finding good
+answers upvoted and "Jon Skeet" types, most of the threads seem to involve people struggling to understand each other, or convincing 
+people to use the graphical client.
+
+Bottoms line : you're on your own with this.
+
+## 7 - It's more expensive than you think
+
+Perforce likes to maintain that git, while free, has a lot of hidden costs more to use over the long term, but if you ask me this 
+is a load of bunk. 
+
+What we know for sure is per-seat Perforce licenses are expensive. But on top of that, Perforce's messed-up model is going to force
+you to either work bad, or work expensive. Let's look at how perfoce manages revisions. A revision is an individual commmit, it
+consists of one or more changes to one or more files, done by a single user. The revision is the unit of work for build systems -
+it's what you will almost always want to pull and compile.
+
+Perforce lets you run a query to get a list of latest revisions, but once you have a revision ids you can't read actually read
+which stream that revision is from. To do that, you need the stream already checked out, which means have to set up a workspace,
+thats hardcorded to a host computer and path on that computer. Basically, the number of concurrent streams your team has access to
+will proportioanal to how much dedicated hardware you have for building those streams on. There is also a high management cost in
+creating new streams, so count on reusing perpetual streams and passing around from team to team.
+
+## In conclusion
+
+Perforce is a one-trick pony. It's built entirely around its graphical user interface, Helix, and how easy this client is to use
+by non-technical people working with binary assets. For everything else Perfoce is a massive step backward, and if you're planning
+on implementing modern standards of automation and script on it, you're in for a rude surprise.
+
+
+
+        {{/markdown}}
+    {{/content}}
+{{/extend}}
